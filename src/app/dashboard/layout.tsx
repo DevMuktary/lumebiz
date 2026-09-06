@@ -97,7 +97,7 @@ const NAVIGATION: NavCategory[] = [
   {
     category: "Developer",
     links: [
-      { name: "Developer API", href: "#", icon: Code, isComingSoon: true, showSoonBadge: true },
+      { name: "Developer Hub", href: "/dashboard/developer", icon: Code },
     ]
   },
   {
