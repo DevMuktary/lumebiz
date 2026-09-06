@@ -50,13 +50,13 @@ export const DeveloperConsoleHeader: React.FC<DeveloperConsoleHeaderProps> = ({
           <span>Documentation</span>
         </Link>
 
-        {/* Dedicated API Pricing Page Link */}
+        {/* Official Dynamic Pricing Link */}
         <Link
-          href="/dashboard/developer/pricing"
+          href="/dashboard/pricing"
           className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           <Tag className="h-4 w-4 text-emerald-500" />
-          <span>API Pricing</span>
+          <span>Pricing</span>
         </Link>
 
         {/* System Status */}

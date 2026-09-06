@@ -197,11 +197,11 @@ export const LiveActivationModal: React.FC<LiveActivationModalProps> = ({
                 onChange={(e) => setUseCase(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="Verification & Slip Printing Agency (Reseller)">Verification &amp; Slip Printing Agency (Reseller)</option>
-                <option value="Corporate Services & Registration Agency">Corporate Services &amp; Registration Agency</option>
-                <option value="Customer KYC & Onboarding">Customer KYC &amp; Onboarding</option>
-                <option value="Staff & Employee Verification">Staff &amp; Employee Verification</option>
-                <option value="Fintech & Lending">Fintech &amp; Lending Platform</option>
+                <option value="Multi-Service Agency / Business Partner">Multi-Service Agency / Business Partner (Identity, CAC, Compliance)</option>
+                <option value="Corporate Services & Company Registration">Corporate Services &amp; Company Registration</option>
+                <option value="Customer KYC & Identity Verification">Customer KYC &amp; Identity Verification</option>
+                <option value="Staff & Employee Onboarding">Staff &amp; Employee Onboarding</option>
+                <option value="Fintech, Banking & Lending Platform">Fintech, Banking &amp; Lending Platform</option>
                 <option value="Agent Banking & POS Operations">Agent Banking &amp; POS Operations</option>
                 <option value="E-Commerce & Logistics">E-Commerce &amp; Logistics</option>
                 <option value="Other">Other (Specify below)</option>
