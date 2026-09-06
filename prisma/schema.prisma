@@ -161,6 +161,7 @@ model User {
 
   // --- DEVELOPER PLATFORM ---
   sandboxBalance     Decimal            @default(1000000.00) @db.Decimal(12, 2)
+  developerMode      ApiKeyType         @default(TEST)
   apiKeys            ApiKey[]
   developerProfile   DeveloperProfile?
   webhookConfig      WebhookConfig?

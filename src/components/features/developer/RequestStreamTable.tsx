@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Activity, Filter, RefreshCw, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { Activity, Filter, RefreshCw, ChevronRight, History, ExternalLink } from "lucide-react";
 import { RequestInspectDrawer } from "./RequestInspectDrawer";
 
 export interface LogItem {
@@ -29,6 +30,9 @@ export const RequestStreamTable: React.FC<RequestStreamTableProps> = ({ environm
   // Filters
   const [serviceFilter, setServiceFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+
+  // History Quick-Links dropdown
+  const [isHistoryMenuOpen, setIsHistoryMenuOpen] = useState(false);
 
   // Inspect Drawer
   const [inspectLogId, setInspectLogId] = useState<string | null>(null);
@@ -99,19 +103,74 @@ export const RequestStreamTable: React.FC<RequestStreamTableProps> = ({ environm
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
       {/* Header & Filter Controls */}
-      <div className="flex flex-col gap-3 border-b border-border/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-border/60 p-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Activity className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold text-foreground">API Request Stream</h2>
+            <h2 className="text-lg font-bold text-foreground">
+              HTTP Request Stream (API Debugger)
+            </h2>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Real-time HTTP logs. Click any request to inspect headers, request payloads, and raw responses.
+            Low-level HTTP traffic and payload debugger for developer integrations.
           </p>
         </div>
 
-        {/* Filter Bar */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Action Controls & Filters */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Direct Link to Service Order History */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsHistoryMenuOpen(!isHistoryMenuOpen)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
+            >
+              <History className="h-3.5 w-3.5 text-primary" />
+              <span>Service Order History</span>
+            </button>
+
+            {isHistoryMenuOpen && (
+              <div className="absolute right-0 top-10 z-30 w-56 rounded-xl border border-border bg-card p-1.5 shadow-xl animate-in fade-in zoom-in-95">
+                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Service Records
+                </div>
+                <Link
+                  href="/dashboard/nin/slips"
+                  className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setIsHistoryMenuOpen(false)}
+                >
+                  <span>NIN Slips Printed</span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </Link>
+                <Link
+                  href="/dashboard/nin/ipe/history"
+                  className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setIsHistoryMenuOpen(false)}
+                >
+                  <span>NIN IPE Clearances</span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </Link>
+                <Link
+                  href="/dashboard/nin/personalization/history"
+                  className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setIsHistoryMenuOpen(false)}
+                >
+                  <span>NIN Personalizations</span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </Link>
+                <Link
+                  href="/dashboard/bvn"
+                  className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setIsHistoryMenuOpen(false)}
+                >
+                  <span>BVN Verifications</span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Granular Service / Endpoint Filter */}
           <div className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs text-foreground">
             <Filter className="h-3.5 w-3.5 text-muted-foreground" />
             <select
@@ -119,13 +178,17 @@ export const RequestStreamTable: React.FC<RequestStreamTableProps> = ({ environm
               onChange={(e) => setServiceFilter(e.target.value)}
               className="bg-transparent text-xs text-foreground focus:outline-none cursor-pointer"
             >
-              <option value="ALL">All Services</option>
-              <option value="NIN">NIN Queries</option>
-              <option value="BVN">BVN Queries</option>
-              <option value="IPE">IPE Clearances</option>
+              <option value="ALL">All Endpoints</option>
+              <option value="NIN_SEARCH">/v1/nin/by-nin (NIN Search)</option>
+              <option value="NIN_PHONE">/v1/nin/by-phone (Phone Search)</option>
+              <option value="NIN_IPE">/v1/nin/ipe (IPE Clearance)</option>
+              <option value="NIN_VALIDATION">/v1/nin/validation (Validation)</option>
+              <option value="NIN_PERSONALIZATION">/v1/nin/personalization</option>
+              <option value="BVN">/v1/bvn/verify (BVN Verify)</option>
             </select>
           </div>
 
+          {/* Status Code Filter */}
           <div className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs text-foreground">
             <select
               value={statusFilter}
@@ -173,7 +236,7 @@ export const RequestStreamTable: React.FC<RequestStreamTableProps> = ({ environm
                 <th className="px-5 py-3 text-right font-medium">Inspect</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40 font-mono">
+            <tbody className="divide-y divide-border/40">
               {logs.map((log) => (
                 <tr
                   key={log.id}
@@ -197,12 +260,12 @@ export const RequestStreamTable: React.FC<RequestStreamTableProps> = ({ environm
                   </td>
                   <td className="px-5 py-3">{getStatusBadge(log.statusCode)}</td>
                   <td className="px-5 py-3 text-muted-foreground">{log.latencyMs}ms</td>
-                  <td className="px-5 py-3 text-foreground">
+                  <td className="px-5 py-3 text-foreground font-semibold">
                     ₦{Number(log.amountCharged || 0).toLocaleString()}
                   </td>
                   <td className="px-5 py-3 text-right">
                     <span className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline">
-                      <span>View</span>
+                      <span>Inspect</span>
                       <ChevronRight className="h-3.5 w-3.5" />
                     </span>
                   </td>

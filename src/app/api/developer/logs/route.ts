@@ -35,13 +35,19 @@ export async function GET(req: NextRequest) {
       environment: environment,
     };
 
-    // Filter by Service Prefix
-    if (serviceFilter === "NIN") {
-      where.endpoint = { contains: "/nin" };
+    // Granular Endpoint / Service Filtering
+    if (serviceFilter === "NIN_SEARCH") {
+      where.endpoint = { contains: "by-nin" };
+    } else if (serviceFilter === "NIN_PHONE") {
+      where.endpoint = { contains: "by-phone" };
+    } else if (serviceFilter === "NIN_IPE") {
+      where.endpoint = { contains: "/ipe" };
+    } else if (serviceFilter === "NIN_VALIDATION") {
+      where.endpoint = { contains: "/validation" };
+    } else if (serviceFilter === "NIN_PERSONALIZATION") {
+      where.endpoint = { contains: "/personalization" };
     } else if (serviceFilter === "BVN") {
       where.endpoint = { contains: "/bvn" };
-    } else if (serviceFilter === "IPE") {
-      where.endpoint = { contains: "/ipe" };
     }
 
     // Filter by Status Code Class

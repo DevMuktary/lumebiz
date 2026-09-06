@@ -21,7 +21,9 @@ export default function DeveloperDashboardPage() {
     totalSpentLive: 0,
     totalSpentTest: 0,
     totalCallsToday: 0,
-    successRate: 100,
+    successfulCallsToday: 0,
+    failedCallsToday: 0,
+    successRate: null as number | null,
     liveKeysCount: 0,
     testKeysCount: 0,
   });
@@ -45,13 +47,18 @@ export default function DeveloperDashboardPage() {
       const res = await fetch("/api/developer/overview");
       const data = await res.json();
       if (data.success && data.data) {
+        if (data.data.activeMode) {
+          setEnvironment(data.data.activeMode);
+        }
         setStats({
           walletBalance: data.data.walletBalance,
           sandboxBalance: data.data.sandboxBalance,
           totalSpentLive: data.data.totalSpentLive || 0,
           totalSpentTest: data.data.totalSpentTest || 0,
           totalCallsToday: data.data.totalCallsToday,
-          successRate: data.data.successRate,
+          successfulCallsToday: data.data.successfulCallsToday || 0,
+          failedCallsToday: data.data.failedCallsToday || 0,
+          successRate: data.data.successRate, // null when no calls
           liveKeysCount: data.data.liveKeysCount,
           testKeysCount: data.data.testKeysCount,
         });
@@ -61,6 +68,27 @@ export default function DeveloperDashboardPage() {
       console.error("Failed to load developer overview:", err);
     }
   }, []);
+
+  // Handle Environment Toggle with PostgreSQL persistence
+  const handleToggleEnvironment = async (newEnv: "LIVE" | "TEST") => {
+    if (newEnv === "LIVE" && developerProfile?.status !== "APPROVED") {
+      setIsLiveActivationOpen(true);
+      return;
+    }
+
+    setEnvironment(newEnv);
+
+    // Persist preference to PostgreSQL
+    try {
+      await fetch("/api/developer/overview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: newEnv }),
+      });
+    } catch (err) {
+      console.warn("Failed to persist developer mode preference:", err);
+    }
+  };
 
   // Load Keys for active environment
   const loadKeys = useCallback(async () => {
@@ -117,7 +145,7 @@ export default function DeveloperDashboardPage() {
       {/* 1. Header with Switch Toggle & Hub Links */}
       <DeveloperConsoleHeader
         environment={environment}
-        onToggleEnvironment={setEnvironment}
+        onToggleEnvironment={handleToggleEnvironment}
         liveApprovalStatus={developerProfile?.status}
       />
 
@@ -128,6 +156,8 @@ export default function DeveloperDashboardPage() {
         sandboxBalance={stats.sandboxBalance}
         totalSpent={environment === "LIVE" ? stats.totalSpentLive : stats.totalSpentTest}
         totalCallsToday={stats.totalCallsToday}
+        successfulCallsToday={stats.successfulCallsToday}
+        failedCallsToday={stats.failedCallsToday}
         successRate={stats.successRate}
       />
 
@@ -147,7 +177,7 @@ export default function DeveloperDashboardPage() {
       {/* 4. Webhook Configuration Section */}
       <WebhookConfigCard />
 
-      {/* 5. Real-Time Request Stream Logs Table (with slide-over inspect drawer) */}
+      {/* 5. Real-Time HTTP Request Stream Logs Table (API Debugger) */}
       <RequestStreamTable environment={environment} />
 
       {/* 6. Live Mode 1-Minute Compliance Modal */}
