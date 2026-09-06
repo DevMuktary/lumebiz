@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const [todayLogsCount, successfulLogsCount, latencyAggregate, keyCounts] = await Promise.all([
+    const [todayLogsCount, successfulLogsCount, spentAggregates, keyCounts] = await Promise.all([
       prisma.apiRequestLog.count({
         where: { userId: user.id, createdAt: { gte: today } },
       }),
@@ -38,9 +38,10 @@ export async function GET(req: NextRequest) {
           statusCode: { gte: 200, lt: 300 },
         },
       }),
-      prisma.apiRequestLog.aggregate({
-        where: { userId: user.id, createdAt: { gte: today } },
-        _avg: { latencyMs: true },
+      prisma.apiRequestLog.groupBy({
+        by: ["environment"],
+        where: { userId: user.id },
+        _sum: { amountCharged: true },
       }),
       prisma.apiKey.groupBy({
         by: ["type"],
@@ -52,18 +53,21 @@ export async function GET(req: NextRequest) {
     const liveKeysCount = keyCounts.find((k) => k.type === "LIVE")?._count._all || 0;
     const testKeysCount = keyCounts.find((k) => k.type === "TEST")?._count._all || 0;
 
+    const totalSpentLive = Number(spentAggregates.find((s) => s.environment === "LIVE")?._sum.amountCharged || 0);
+    const totalSpentTest = Number(spentAggregates.find((s) => s.environment === "TEST")?._sum.amountCharged || 0);
+
     const successRate =
       todayLogsCount > 0 ? ((successfulLogsCount / todayLogsCount) * 100).toFixed(1) : "100.0";
-    const avgLatency = Math.round(latencyAggregate._avg.latencyMs || 0);
 
     return NextResponse.json({
       success: true,
       data: {
         walletBalance: Number(user.wallet?.balance || 0),
         sandboxBalance: Number(user.sandboxBalance || 1000000),
+        totalSpentLive,
+        totalSpentTest,
         totalCallsToday: todayLogsCount,
         successRate: parseFloat(successRate),
-        avgLatencyMs: avgLatency,
         liveKeysCount,
         testKeysCount,
         developerProfile: user.developerProfile

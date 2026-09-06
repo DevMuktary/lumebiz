@@ -9,7 +9,6 @@ import { ApiKeyManager, ApiKeyItem } from "@/components/features/developer/ApiKe
 import { WebhookConfigCard } from "@/components/features/developer/WebhookConfigCard";
 import { RequestStreamTable } from "@/components/features/developer/RequestStreamTable";
 import { LiveActivationModal } from "@/components/features/developer/LiveActivationModal";
-import { ApiPricingModal } from "@/components/features/developer/ApiPricingModal";
 
 export default function DeveloperDashboardPage() {
   const { data: session, status } = useSession();
@@ -19,9 +18,10 @@ export default function DeveloperDashboardPage() {
   const [stats, setStats] = useState({
     walletBalance: 0,
     sandboxBalance: 1000000,
+    totalSpentLive: 0,
+    totalSpentTest: 0,
     totalCallsToday: 0,
     successRate: 100,
-    avgLatencyMs: 240,
     liveKeysCount: 0,
     testKeysCount: 0,
   });
@@ -31,7 +31,6 @@ export default function DeveloperDashboardPage() {
 
   const [developerProfile, setDeveloperProfile] = useState<any | null>(null);
   const [isLiveActivationOpen, setIsLiveActivationOpen] = useState(false);
-  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   // Authentication gate
   useEffect(() => {
@@ -49,9 +48,10 @@ export default function DeveloperDashboardPage() {
         setStats({
           walletBalance: data.data.walletBalance,
           sandboxBalance: data.data.sandboxBalance,
+          totalSpentLive: data.data.totalSpentLive || 0,
+          totalSpentTest: data.data.totalSpentTest || 0,
           totalCallsToday: data.data.totalCallsToday,
           successRate: data.data.successRate,
-          avgLatencyMs: data.data.avgLatencyMs,
           liveKeysCount: data.data.liveKeysCount,
           testKeysCount: data.data.testKeysCount,
         });
@@ -114,22 +114,21 @@ export default function DeveloperDashboardPage() {
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* 1. Header with Environment Toggle & Hub Links */}
+      {/* 1. Header with Switch Toggle & Hub Links */}
       <DeveloperConsoleHeader
         environment={environment}
         onToggleEnvironment={setEnvironment}
-        onOpenPricingModal={() => setIsPricingModalOpen(true)}
         liveApprovalStatus={developerProfile?.status}
       />
 
-      {/* 2. Real-Time Metric Stat Cards */}
+      {/* 2. Real-Time Metric Stat Cards (Balance, Total Spent, Calls Today) */}
       <DeveloperMetricCards
         environment={environment}
         walletBalance={stats.walletBalance}
         sandboxBalance={stats.sandboxBalance}
+        totalSpent={environment === "LIVE" ? stats.totalSpentLive : stats.totalSpentTest}
         totalCallsToday={stats.totalCallsToday}
         successRate={stats.successRate}
-        avgLatencyMs={stats.avgLatencyMs}
       />
 
       {/* 3. API Keys Management Section */}
@@ -160,12 +159,6 @@ export default function DeveloperDashboardPage() {
           loadOverview();
         }}
         currentProfile={developerProfile}
-      />
-
-      {/* 7. Transparent API Wholesale Pricing Modal */}
-      <ApiPricingModal
-        isOpen={isPricingModalOpen}
-        onClose={() => setIsPricingModalOpen(false)}
       />
     </div>
   );
